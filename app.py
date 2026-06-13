@@ -61,3 +61,29 @@ else:
                     st.error("Gagal menyimpan. Pastikan Service Account sudah di-Invite ke Google Sheet sebagai Editor.")
             else:
                 st.warning("Mohon isi Nama dan WA.")
+
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+import json
+from google.colab import userdata
+
+# Cell ini untuk mengetes akses Google Sheet Anda dari Colab
+# Masukkan JSON Service Account Anda di bawah ini untuk tes
+def test_connection():
+    try:
+        # Ambil kredensial dari secrets yang sudah Anda buat di cell pertama
+        # (Asumsi Anda sudah mengisi secrets_content di cell 2e5f1585)
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        
+        # Jika Anda menjalankan di Colab, kita bisa coba simulasi koneksi
+        # GANTI ID DI BAWAH INI DENGAN ID SHEET ANDA
+        SHEET_ID = '1VvwjYo0ghGU7Glw1hHxYkKeO-TAmMY_ql7Ty9qUWC4M'
+        
+        print(f"Mencoba menghubungkan ke sheet: {SHEET_ID}...")
+        # Catatan: Ini hanya tes jika Anda sudah memasukkan JSON ke variabel
+        # Jika belum, pastikan langkah manual 'Share' di browser sudah dilakukan.
+        print("Tips: Pastikan email 'client_email' sudah di-invite di Google Sheet.")
+    except Exception as e:
+        print(f"Error: {e}")
+
+test_connection()
