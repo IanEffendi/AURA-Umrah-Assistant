@@ -10,12 +10,12 @@ try:
     api_key = st.secrets.get("GEMINI_API_KEY", "")
     if api_key:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash',
+        model = genai.GenerativeModel('gemini-1.5-flash', 
                                     system_instruction="Anda adalah AURA, Asisten Umrah Ramah & Amanah. Bantu jamaah dengan sopan.")
     else:
-        st.error("GEMINI_API_KEY tidak ditemukan di Secrets.")
+        st.error("API KEY belum diisi di Secrets Streamlit Cloud.")
 except Exception as e:
-    st.error(f"Gagal konfigurasi Gemini: {e}")
+    st.error(f"Gagal AI: {e}")
 
 def connect_to_sheets():
     try:
@@ -23,8 +23,8 @@ def connect_to_sheets():
         creds_dict = dict(st.secrets["gcp_service_account"])
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
-        # GANTI ID DI BAWAH INI
-        return client.open_by_key("https://docs.google.com/spreadsheets/d/1VvwjYo0ghGU7Glw1hHxYkKeO-TAmMY_ql7Ty9qUWC4M/edit?usp=sharing").sheet1
+        # ID SPREADSHEET ANDA SUDAH DIPASANG DI BAWAH INI
+        return client.open_by_key("1VvwjYo0ghGU7Glw1hHxYkKeO-TAmMY_ql7Ty9qUWC4M").sheet1
     except Exception as e:
         return None
 
@@ -36,6 +36,7 @@ if menu == "Chat AI":
         st.session_state.messages = []
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]): st.markdown(msg["content"])
+    
     if prompt := st.chat_input("Tanya AURA..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
@@ -44,7 +45,7 @@ if menu == "Chat AI":
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             with st.chat_message("assistant"): st.markdown(response.text)
         except Exception as e:
-            st.error("Maaf, terjadi kendala teknis pada AI. Pastikan API KEY sudah benar.")
+            st.error("Koneksi AI Gagal. Pastikan GEMINI_API_KEY di Secrets sudah benar.")
 else:
     st.subheader("Pendaftaran Umrah")
     with st.form("form_daftar"):
@@ -55,8 +56,8 @@ else:
                 sheet = connect_to_sheets()
                 if sheet:
                     sheet.append_row([nama, wa, str(datetime.now())])
-                    st.success("Data berhasil disimpan!")
+                    st.success("Pendaftaran Berhasil Disimpan!")
                 else:
-                    st.error("Gagal terhubung ke Google Sheets. Periksa ID Spreadsheet dan Izin Service Account.")
+                    st.error("Gagal menyimpan. Pastikan Service Account sudah di-Invite ke Google Sheet sebagai Editor.")
             else:
-                st.warning("Mohon lengkapi data.")
+                st.warning("Mohon isi Nama dan WA.")
