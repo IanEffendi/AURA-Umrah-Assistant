@@ -1,7 +1,3 @@
-Error tersebut terjadi karena Anda masih menyalin baris python_only_code = r''' ke dalam file app.py. File tersebut seharusnya hanya berisi kode aplikasinya saja, tanpa variabel pembungkus dari Colab.
-
-Silakan HAPUS SEMUA isi file app.py di GitHub, lalu salin dan tempel kode di bawah ini (mulai dari baris import streamlit sampai baris terakhir):
-
 import streamlit as st
 import google.generativeai as genai
 import gspread
