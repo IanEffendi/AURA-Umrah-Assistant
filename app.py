@@ -10,9 +10,8 @@ try:
     api_key = st.secrets.get("GEMINI_API_KEY", "")
     if api_key:
         genai.configure(api_key=api_key)
-        # Menggunakan gemini-1.5-flash-latest untuk kompatibilitas lebih baik
-        model = genai.GenerativeModel('gemini-1.5-flash-latest',
-                                    system_instruction="Anda adalah AURA, Asisten Umrah Ramah & Amanah. Bantu jamaah dengan sopan, Islami, dan informatif.")
+        # Menggunakan 'gemini-pro' sebagai model yang paling stabil dan universal
+        model = genai.GenerativeModel('gemini-pro')
     else:
         st.error("ERROR: GEMINI_API_KEY tidak ditemukan di Secrets.")
 except Exception as e:
@@ -21,12 +20,17 @@ except Exception as e:
 def connect_to_sheets():
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        creds_dict = dict(st.secrets["gcp_service_account"])
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+        creds_info = dict(st.secrets["gcp_service_account"])
+        
+        # Perbaikan krusial: Membersihkan format private_key agar terbaca benar oleh Python
+        if "private_key" in creds_info:
+            creds_info["private_key"] = creds_info["private_key"].replace("\\n", "\n")
+            
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_info, scope)
         client = gspread.authorize(creds)
         return client.open_by_key("1VvwjYo0ghGU7Glw1hHxYkKeO-TAmMY_ql7Ty9qUWC4M").sheet1
     except Exception as e:
-        st.error(f"ERROR KONEKSI SHEETS: {e}")
+        st.error(f"Detail Error Koneksi Sheets: {e}")
         return None
 
 st.title("\u1332B AURA Assistant")
@@ -41,7 +45,9 @@ if menu == "Chat AI (Tanya Jawab)":
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
         try:
-            response = model.generate_content(prompt)
+            # Menambahkan instruksi persona ke dalam prompt
+            full_prompt = f"Persona: Anda adalah AURA (Asisten Umrah Ramah & Amanah) yang Islami. Pertanyaan: {prompt}"
+            response = model.generate_content(full_prompt)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             with st.chat_message("assistant"): st.markdown(response.text)
         except Exception as e: st.error(f"AI Error: {e}")
@@ -53,11 +59,10 @@ else:
         paket = st.selectbox("Pilih Paket", ["Paket Reguler", "Paket Plus", "Paket VIP"])
         if st.form_submit_button("Kirim Pendaftaran"):
             if nama and wa:
-                with st.spinner("Menyimpan data..."):
+                with st.spinner("Sedang memproses ke database..."):
                     sheet = connect_to_sheets()
                     if sheet:
                         sheet.append_row([nama, wa, paket, str(datetime.now())])
                         st.success(f"Alhamdulillah, data Saudara/i {nama} berhasil terdaftar!")
-                        st.info("Admin kami akan segera menghubungi Anda.")
-                    else: st.error("Gagal menyimpan. Pastikan Service Account sudah di-invite sebagai Editor di Google Sheet.")
+                    else: st.error("Koneksi gagal. Cek kembali format Private Key di Secrets Streamlit.")
             else: st.warning("Harap lengkapi Nama dan No. WhatsApp.")
