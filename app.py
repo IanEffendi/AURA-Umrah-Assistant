@@ -1,52 +1,5 @@
 import os
 
-os.makedirs('.streamlit', exist_ok=True)
-
-# Memperbaiki format string agar valid secara TOML dan Python
-# Pastikan private_key menggunakan literal string format (\n) atau triple quotes TOML
-secrets_content = r'''GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_DISINI"
-TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN"
-TELEGRAM_CHAT_ID = "YOUR_CHAT_ID"
-
-[gcp_service_account]
-type = "service_account"
-project_id = "your-project-id"
-private_key_id = "your-private-key-id"
-private_key = "-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY_DISINI\n-----END PRIVATE KEY-----\n"
-client_email = "your-service-account@email.com"
-client_id = "your-client-id"
-auth_uri = "https://accounts.google.com/o/oauth2/auth"
-token_uri = "https://oauth2.googleapis.com/token"
-auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
-client_x509_cert_url = "your-cert-url"'''
-
-with open('.streamlit/secrets.toml', 'w') as f:
-    f.write(secrets_content)
-
-print('File .streamlit/secrets.toml berhasil diperbaiki! Silakan isi data Anda dan jalankan ulang cell utama.')
-
-requirements = '''
-streamlit
-google-generativeai
-gspread
-oauth2client
-'''
-
-with open('requirements.txt', 'w') as f:
-    f.write(requirements.strip())
-
-print('File requirements.txt yang disederhanakan BERHASIL dibuat!')
-print('---\n' + requirements.strip() + '\n---')
-
-import urllib
-print("Password/Endpoint IP untuk LocalTunnel Anda adalah:", urllib.request.urlopen('https://ipv4.icanhazip.com').read().decode('utf8').strip())
-
-# Menjalankan Streamlit dan LocalTunnel
-# Kita gunakan app.py sebagai file utama
-!streamlit run app.py & npx localtunnel --port 8501
-
-import os
-
 # Pastikan variable ini HANYA berisi kode Python murni
 final_code = r'''import streamlit as st
 import google.generativeai as genai
