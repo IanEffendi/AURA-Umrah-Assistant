@@ -2,10 +2,3 @@ streamlit
 google-generativeai
 gspread
 oauth2client
-'''
-
-with open('requirements.txt', 'w') as f:
-    f.write(requirements.strip())
-
-print('File requirements.txt yang disederhanakan BERHASIL dibuat!')
-print('---\n' + requirements.strip() + '\n---')
