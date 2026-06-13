@@ -5,3 +5,14 @@ oauth2client
 pandas
 requests
 '''
+
+with open('requirements.txt', 'w') as f:
+    f.write(requirements.strip())
+
+print('File requirements.txt BERHASIL diperbarui!')
+print('Isi file:')
+print('---')
+with open('requirements.txt', 'r') as f:
+    print(f.read())
+print('---')
+print('SILAKAN SALIN TEKS DI ATAS KE GITHUB ANDA.')
