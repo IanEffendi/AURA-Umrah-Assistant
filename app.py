@@ -97,13 +97,13 @@ with tab2:
                     st.success("Alhamdulillah! Data Anda berhasil disimpan.")
                     
                     # 2. Buat Link WhatsApp otomatis untuk "Closing"
-                    admin_phone = "6281234567890" # GANTI DENGAN NOMOR WA ADMIN
+                    admin_phone = "6281252539170" # GANTI DENGAN NOMOR WA ADMIN
                     pesan_wa = f"Assalamu'alaikum Admin. Saya {nama}. Saya sudah mengisi form minat jamaah. Saya tertarik dengan {paket}. Mohon informasi lebih lanjut."
                     pesan_encoded = urllib.parse.quote(pesan_wa)
                     link_wa = f"https://wa.me/{admin_phone}?text={pesan_encoded}"
                     
                     st.info("Silakan klik tombol di bawah ini untuk langsung terhubung dengan Admin via WhatsApp dan mendapatkan brosur lengkap!")
-                    st.markdown(f'<a href="{link_wa}" target="_blank"><button style="background-color:#25D366; color:white; padding:10px 24px; border:none; border-radius:5px; cursor:pointer;">Hubungi Admin via WhatsApp</button></a>', unsafe_allow_html=True)
+                   st.markdown(f'<a href="{link_wa}" target="_blank"><button style="background-color:#25D366; color:white; padding:10px 24px; border:none; border-radius:5px; cursor:pointer;">Hubungi Admin via WhatsApp 📱</button></a>', unsafe_allow_html=True)
                 
                 except Exception as e:
                     st.error(f"Terjadi kesalahan sistem: {e}")
