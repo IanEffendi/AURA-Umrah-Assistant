@@ -6,7 +6,6 @@ from datetime import datetime
 
 st.set_page_config(page_title="AURA Assistant", page_icon="\u1332B")
 
-# --- DEBUGGING AI ---
 try:
     api_key = st.secrets.get("GEMINI_API_KEY", "")
     if api_key:
@@ -14,34 +13,28 @@ try:
         model = genai.GenerativeModel('gemini-1.5-flash', 
                                     system_instruction="Anda adalah AURA, Asisten Umrah Ramah & Amanah. Bantu jamaah dengan sopan.")
     else:
-        st.error("ERROR: GEMINI_API_KEY tidak ditemukan di Secrets Streamlit.")
+        st.error("ERROR: GEMINI_API_KEY tidak ditemukan.")
 except Exception as e:
-    st.error(f"ERROR KONFIGURASI AI: {e}")
+    st.error(f"ERROR AI: {e}")
 
 def connect_to_sheets():
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        if "gcp_service_account" not in st.secrets:
-            st.error("ERROR: Bagian [gcp_service_account] tidak ditemukan di Secrets.")
-            return None
-            
         creds_dict = dict(st.secrets["gcp_service_account"])
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
         return client.open_by_key("1VvwjYo0ghGU7Glw1hHxYkKeO-TAmMY_ql7Ty9qUWC4M").sheet1
     except Exception as e:
-        st.error(f"DETAIL ERROR GOOGLE SHEETS: {str(e)}")
+        st.error(f"ERROR SHEETS: {e}")
         return None
 
 st.title("\u1332B AURA Assistant")
 menu = st.sidebar.selectbox("Menu", ["Chat AI", "Pendaftaran"])
 
 if menu == "Chat AI":
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+    if "messages" not in st.session_state: st.session_state.messages = []
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]): st.markdown(msg["content"])
-    
     if prompt := st.chat_input("Tanya AURA..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
@@ -49,46 +42,17 @@ if menu == "Chat AI":
             response = model.generate_content(prompt)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             with st.chat_message("assistant"): st.markdown(response.text)
-        except Exception as e:
-            st.error(f"AI Error Detail: {str(e)}")
+        except Exception as e: st.error(f"AI Error: {e}")
 else:
     st.subheader("Pendaftaran Umrah")
     with st.form("form_daftar"):
         nama = st.text_input("Nama Lengkap")
         wa = st.text_input("No. WhatsApp")
-        if st.form_submit_button("Kirim Pendaftaran"):
+        if st.form_submit_button("Kirim"):
             if nama and wa:
                 sheet = connect_to_sheets()
                 if sheet:
                     sheet.append_row([nama, wa, str(datetime.now())])
-                    st.success("Alhamdulillah! Data Anda telah tersimpan.")
-                else:
-                    st.error("Gagal terhubung ke Database. Cek detail error di atas.")
-            else:
-                st.warning("Mohon lengkapi Nama dan No. WhatsApp.")
-
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-import json
-from google.colab import userdata
-
-# Cell ini untuk mengetes akses Google Sheet Anda dari Colab
-# Masukkan JSON Service Account Anda di bawah ini untuk tes
-def test_connection():
-    try:
-        # Ambil kredensial dari secrets yang sudah Anda buat di cell pertama
-        # (Asumsi Anda sudah mengisi secrets_content di cell 2e5f1585)
-        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        
-        # Jika Anda menjalankan di Colab, kita bisa coba simulasi koneksi
-        # GANTI ID DI BAWAH INI DENGAN ID SHEET ANDA
-        SHEET_ID = '1VvwjYo0ghGU7Glw1hHxYkKeO-TAmMY_ql7Ty9qUWC4M'
-        
-        print(f"Mencoba menghubungkan ke sheet: {SHEET_ID}...")
-        # Catatan: Ini hanya tes jika Anda sudah memasukkan JSON ke variabel
-        # Jika belum, pastikan langkah manual 'Share' di browser sudah dilakukan.
-        print("Tips: Pastikan email 'client_email' sudah di-invite di Google Sheet.")
-    except Exception as e:
-        print(f"Error: {e}")
-
-test_connection()
+                    st.success("Berhasil disimpan!")
+                else: st.error("Gagal terhubung ke Sheets.")
+            else: st.warning("Isi Nama dan WA.")
