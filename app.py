@@ -6,6 +6,7 @@ from datetime import datetime
 
 st.set_page_config(page_title="AURA Assistant", page_icon="\u1332B")
 
+# --- DEBUGGING AI ---
 try:
     api_key = st.secrets.get("GEMINI_API_KEY", "")
     if api_key:
@@ -13,19 +14,23 @@ try:
         model = genai.GenerativeModel('gemini-1.5-flash', 
                                     system_instruction="Anda adalah AURA, Asisten Umrah Ramah & Amanah. Bantu jamaah dengan sopan.")
     else:
-        st.error("API KEY belum diisi di Secrets Streamlit Cloud.")
+        st.error("ERROR: GEMINI_API_KEY tidak ditemukan di Secrets Streamlit.")
 except Exception as e:
-    st.error(f"Gagal AI: {e}")
+    st.error(f"ERROR KONFIGURASI AI: {e}")
 
 def connect_to_sheets():
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        if "gcp_service_account" not in st.secrets:
+            st.error("ERROR: Bagian [gcp_service_account] tidak ditemukan di Secrets.")
+            return None
+            
         creds_dict = dict(st.secrets["gcp_service_account"])
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
-        # ID SPREADSHEET ANDA SUDAH DIPASANG DI BAWAH INI
         return client.open_by_key("1VvwjYo0ghGU7Glw1hHxYkKeO-TAmMY_ql7Ty9qUWC4M").sheet1
     except Exception as e:
+        st.error(f"DETAIL ERROR GOOGLE SHEETS: {str(e)}")
         return None
 
 st.title("\u1332B AURA Assistant")
@@ -45,22 +50,22 @@ if menu == "Chat AI":
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             with st.chat_message("assistant"): st.markdown(response.text)
         except Exception as e:
-            st.error("Koneksi AI Gagal. Pastikan GEMINI_API_KEY di Secrets sudah benar.")
+            st.error(f"AI Error Detail: {str(e)}")
 else:
     st.subheader("Pendaftaran Umrah")
     with st.form("form_daftar"):
         nama = st.text_input("Nama Lengkap")
         wa = st.text_input("No. WhatsApp")
-        if st.form_submit_button("Kirim"):
+        if st.form_submit_button("Kirim Pendaftaran"):
             if nama and wa:
                 sheet = connect_to_sheets()
                 if sheet:
                     sheet.append_row([nama, wa, str(datetime.now())])
-                    st.success("Pendaftaran Berhasil Disimpan!")
+                    st.success("Alhamdulillah! Data Anda telah tersimpan.")
                 else:
-                    st.error("Gagal menyimpan. Pastikan Service Account sudah di-Invite ke Google Sheet sebagai Editor.")
+                    st.error("Gagal terhubung ke Database. Cek detail error di atas.")
             else:
-                st.warning("Mohon isi Nama dan WA.")
+                st.warning("Mohon lengkapi Nama dan No. WhatsApp.")
 
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
