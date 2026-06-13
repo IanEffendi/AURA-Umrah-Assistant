@@ -1,7 +1,4 @@
-import os
-
-# KODE PYTHON MURNI (TANPA TANDA SERU / SHELL COMMAND)
-python_only_code = r'''import streamlit as st
+import streamlit as st
 import google.generativeai as genai
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
