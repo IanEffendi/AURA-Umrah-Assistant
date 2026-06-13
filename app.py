@@ -1,28 +1,25 @@
 import os
 
-# Pastikan variable ini HANYA berisi kode Python murni
-final_code = r'''import streamlit as st
+# KODE PYTHON MURNI (TANPA TANDA SERU / SHELL COMMAND)
+python_only_code = r'''import streamlit as st
 import google.generativeai as genai
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 
-# 1. Konfigurasi Halaman
 st.set_page_config(page_title="AURA Assistant", page_icon="\u1332B")
 
-# 2. Inisialisasi AI
 try:
     api_key = st.secrets.get("GEMINI_API_KEY", "")
     if api_key:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash',
+        model = genai.GenerativeModel('gemini-1.5-flash', 
                                     system_instruction="Anda adalah AURA, Asisten Umrah Ramah & Amanah. Bantu jamaah dengan sopan.")
     else:
         st.error("GEMINI_API_KEY tidak ditemukan di Secrets.")
 except Exception as e:
     st.error(f"Gagal konfigurasi Gemini: {e}")
 
-# 3. Fungsi Database
 def connect_to_sheets():
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -33,28 +30,23 @@ def connect_to_sheets():
     except Exception as e:
         return None
 
-# 4. Antarmuka Utama
 st.title("\u1332B AURA Assistant")
 menu = st.sidebar.selectbox("Menu", ["Chat AI", "Pendaftaran"])
 
 if menu == "Chat AI":
     if "messages" not in st.session_state:
         st.session_state.messages = []
-
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]): st.markdown(msg["content"])
-
     if prompt := st.chat_input("Tanya AURA..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
-
         try:
             response = model.generate_content(prompt)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             with st.chat_message("assistant"): st.markdown(response.text)
         except Exception as e:
             st.error("Maaf, terjadi kendala teknis pada AI.")
-
 else:
     st.subheader("Pendaftaran Umrah")
     with st.form("form_daftar"):
