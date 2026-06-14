@@ -10,8 +10,8 @@ try:
     api_key = st.secrets.get("GEMINI_API_KEY", "")
     if api_key:
         genai.configure(api_key=api_key)
-        # Menggunakan 'gemini-pro' sebagai model yang paling stabil dan universal
-        model = genai.GenerativeModel('gemini-pro')
+        # Menggunakan gemini-1.5-flash (Gemini 3 Flash belum dirilis secara publik, versi terbaru adalah 1.5)
+        model = genai.GenerativeModel('gemini-1.5-flash')
     else:
         st.error("ERROR: GEMINI_API_KEY tidak ditemukan di Secrets.")
 except Exception as e:
@@ -22,9 +22,12 @@ def connect_to_sheets():
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         creds_info = dict(st.secrets["gcp_service_account"])
         
-        # Perbaikan krusial: Membersihkan format private_key agar terbaca benar oleh Python
+        # Perbaikan Private Key: Menangani karakter escape dan spasi berlebih
         if "private_key" in creds_info:
-            creds_info["private_key"] = creds_info["private_key"].replace("\\n", "\n")
+            key = creds_info["private_key"]
+            if "\\n" in key:
+                key = key.replace("\\n", "\n")
+            creds_info["private_key"] = key
             
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_info, scope)
         client = gspread.authorize(creds)
@@ -45,7 +48,6 @@ if menu == "Chat AI (Tanya Jawab)":
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
         try:
-            # Menambahkan instruksi persona ke dalam prompt
             full_prompt = f"Persona: Anda adalah AURA (Asisten Umrah Ramah & Amanah) yang Islami. Pertanyaan: {prompt}"
             response = model.generate_content(full_prompt)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
